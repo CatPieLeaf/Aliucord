@@ -42,6 +42,7 @@ internal class ExperimentDefaults : CorePlugin(Manifest("ExperimentDefaults")) {
             "2022-03_android_forum_channel_redesign" to 1,
             "2022-03_highlights_settings" to 1,
             "2022-03_text_in_voice" to 1,
+            "2021-03_nitro_emoji_autocomplete_upsell_android" to 1,
 
             // 2021-10_premium_guild_member_profiles // We handle this manually
         )

@@ -240,6 +240,7 @@ public class PluginManager {
 
     static void loadCorePlugins(Context context) {
         CorePlugin[] corePlugins = {
+            new AlignThreads(),
             new ButtonsAPI(),
             new CommandHandler(),
             new CoreCommands(),
@@ -261,6 +262,10 @@ public class PluginManager {
             new TokenLogin(),
             new UploadSize(),
             new SlashCommandsFix(),
+            new RestartButton(),
+            new AuthorizedAppsCrashFix(),
+            new ValidUser(),
+            new MarkdownFormatter(),
         };
 
         for (Plugin p : corePlugins) {
