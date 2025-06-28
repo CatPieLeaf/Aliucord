@@ -9,10 +9,15 @@ package com.aliucord.injector
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.*
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import com.discord.app.AppActivity
 import com.discord.stores.StoreClientVersion
 import com.discord.stores.StoreStream
@@ -23,11 +28,12 @@ import org.json.JSONObject
 import java.io.*
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 const val LOG_TAG = "Injector"
-private const val DATA_URL = "https://raw.githubusercontent.com/Aliucord/Aliucord/builds/data.json"
-private const val DEX_URL = "https://raw.githubusercontent.com/Aliucord/Aliucord/builds/Aliucord.zip"
+private const val DATA_URL = "https://raw.githubusercontent.com/mantikafasi/Aliucord/builds/data.json"
+private const val DEX_URL = "https://raw.githubusercontent.com/mantikafasi/Aliucord/builds/Aliucord.zip"
 
 @Suppress("DEPRECATION")
 private val BASE_DIRECTORY = File(Environment.getExternalStorageDirectory().absolutePath, "Aliucord")
@@ -129,12 +135,28 @@ private fun init(appActivity: AppActivity) {
  * Checks if app has permission for storage and if so checks settings and copies local dex to code cache
  */
 private fun useLocalDex(appActivity: AppActivity, dexFile: File): Boolean {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-        if (!Environment.isExternalStorageManager())
-            return false
-    } else if (appActivity.checkSelfPermission(Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
-        return false
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) { // if android 11+ request MANAGER_EXTERNAL_STORAGE
+        if (!Environment.isExternalStorageManager()) { // check if we already have permission
+            val uri = Uri.parse(String.format(Locale.ENGLISH, "package:%s", appActivity.applicationContext.packageName))
+            appActivity.startActivity(
+                Intent(
+                    Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION,
+                    uri
+                )
+            )
+        }
+    } else {
+        if (ContextCompat.checkSelfPermission(appActivity, Manifest.permission.READ_EXTERNAL_STORAGE)
+            != PackageManager.PERMISSION_GRANTED
+        ) { // check if we already have permission
+            ActivityCompat.requestPermissions(
+                appActivity, arrayOf(
+                    Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE
+                ), 3
+            )
+        }
     }
+
 
     val settingsFile = File(BASE_DIRECTORY, "settings/Aliucord.json")
     val localDexFile = File(BASE_DIRECTORY, "Aliucord.zip")
