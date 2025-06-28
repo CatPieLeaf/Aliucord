@@ -250,6 +250,7 @@ public class PluginManager {
             new MembersListFix(),
             new NoTrack(),
             new PluginDownloader(),
+            new Polls(),
             new PrivateChannelsListScroll(),
             new PrivateThreads(),
             new RNAPI(),
