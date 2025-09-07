@@ -40,8 +40,7 @@ import com.facebook.drawee.view.SimpleDraweeView
 import com.lytefast.flexinput.R
 
 private val guildTagViewId = View.generateViewId()
-private val ChannelMembersListViewHolderMember.binding
-    by accessField<ChannelMembersListViewHolderMember, WidgetChannelMembersListItemUserBinding>()
+private val ChannelMembersListViewHolderMember.binding by accessField<WidgetChannelMembersListItemUserBinding>()
 
 private class GuildTagView(ctx: Context) : CardView(ctx) {
     private lateinit var badge: SimpleDraweeView
