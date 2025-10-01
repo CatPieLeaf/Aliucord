@@ -1,4 +1,4 @@
-package com.aliucord.coreplugins.decorations
+package com.aliucord.coreplugins.decorations.guildtags
 
 import android.content.Context
 import android.graphics.Typeface
@@ -14,6 +14,7 @@ import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
 import com.aliucord.Utils
 import com.aliucord.api.PatcherAPI
+import com.aliucord.coreplugins.decorations.DecorationsSettings
 import com.aliucord.patcher.*
 import com.aliucord.utils.DimenUtils.dp
 import com.aliucord.utils.ViewUtils.addTo
@@ -120,13 +121,15 @@ private class GuildTagView(ctx: Context) : CardView(ctx) {
             /* view */ badge,
             /* url */ "https://cdn.discordapp.com/guild-tag-badges/${guildId}/${badgeHash}.png",
         )
-        // setOnClickListener {  }
+        setOnClickListener {
+            GuildProfileSheet.show(Utils.widgetChatList!!.parentFragmentManager, guildId)
+        }
     }
 }
 
 internal object GuildTags {
     fun patch(patcher: PatcherAPI) {
-        if (!FluffSettings.enableGuildTags) return
+        if (!DecorationsSettings.enableGuildTags) return
 
         patchUsernameView(patcher)
         patchMemberList(patcher)

@@ -2,7 +2,7 @@ package com.aliucord.coreplugins
 
 import android.content.Context
 import com.aliucord.coreplugins.decorations.DecorationsSettings
-import com.aliucord.coreplugins.decorations.GuildTags
+import com.aliucord.coreplugins.decorations.guildtags.GuildTags
 import com.aliucord.entities.CorePlugin
 import com.aliucord.patcher.*
 import com.aliucord.updater.ManagerBuild
