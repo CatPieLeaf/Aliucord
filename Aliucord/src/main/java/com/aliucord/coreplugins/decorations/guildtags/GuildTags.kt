@@ -84,22 +84,24 @@ private class GuildTagView(ctx: Context) : CardView(ctx) {
     }
 
     /* Adds the tag to a constraint layout between two views */
-    fun addBetween(parent: ConstraintLayout, left: View, right: View) = addTo(parent) {
-        left.layoutParams = (left.layoutParams as ConstraintLayout.LayoutParams).apply {
-            endToStart = id
-        }
-        right.layoutParams = (right.layoutParams as ConstraintLayout.LayoutParams).apply {
-            startToEnd = id
-        }
+    fun addBetween(parent: ConstraintLayout, left: View, right: View) {
+        this.addTo(parent) {
+            left.layoutParams = (left.layoutParams as ConstraintLayout.LayoutParams).apply {
+                endToStart = id
+            }
+            right.layoutParams = (right.layoutParams as ConstraintLayout.LayoutParams).apply {
+                startToEnd = id
+            }
 
-        layoutParams = ConstraintLayout.LayoutParams(WRAP_CONTENT, MATCH_PARENT).apply {
-            marginStart = 4.dp
-            verticalBias = 0.5f
+            layoutParams = ConstraintLayout.LayoutParams(WRAP_CONTENT, MATCH_PARENT).apply {
+                marginStart = 4.dp
+                verticalBias = 0.5f
 
-            topToTop = PARENT_ID
-            bottomToBottom = PARENT_ID
-            startToEnd = left.id
-            endToStart = right.id
+                topToTop = PARENT_ID
+                bottomToBottom = PARENT_ID
+                startToEnd = left.id
+                endToStart = right.id
+            }
         }
     }
 
@@ -108,12 +110,12 @@ private class GuildTagView(ctx: Context) : CardView(ctx) {
         visibility = GONE
         if (data == null) return
 
-        val enabled: Boolean = data.identityEnabled ?: return
+        val enabled = data.identityEnabled ?: return
         if (!enabled) return
 
-        val tag: String = data.tag ?: return
+        val tag = data.tag ?: return
         val guildId = data.identityGuildId ?: return
-        val badgeHash: String = data.badge ?: return
+        val badgeHash = data.badge ?: return
 
         visibility = VISIBLE
         text.text = tag
