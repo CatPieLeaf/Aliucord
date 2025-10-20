@@ -9,7 +9,7 @@ import com.discord.api.commands.Application
 
 private val logger = Logger("GuildProfileStore")
 
-data class GuildProfile(
+internal data class GuildProfile(
     val id: Long,
     val name: String,
     val iconHash: String?,

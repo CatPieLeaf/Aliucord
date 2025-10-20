@@ -44,7 +44,7 @@ import java.util.Locale
 private val logger = Logger("GuildProfileSheet")
 
 @Suppress("MISSING_DEPENDENCY_CLASS", "MISSING_DEPENDENCY_SUPERCLASS")
-class GuildProfileSheet : BottomSheet() {
+internal class GuildProfileSheet : BottomSheet() {
     companion object {
         const val BUNDLE_KEY = "com.aliucord.GuildProfileSheet.guildID"
         fun show(fragmentManager: FragmentManager, guildId: Long) {
