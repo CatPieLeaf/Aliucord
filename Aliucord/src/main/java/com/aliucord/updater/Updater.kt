@@ -69,7 +69,7 @@ object Updater {
      */
     private fun fetchAliucordData(): Boolean {
         try {
-            val url = "https://raw.githubusercontent.com/Aliucord/Aliucord/builds/data.json"
+            val url = "https://raw.githubusercontent.com/CatPieLeaf/Aliucord/builds/data.json"
             val res = Http.simpleJsonGet(url, AliucordData::class.java)
             isAliucordOutdated = isOutdated("Aliucord", BuildConfig.VERSION, res.coreVersion)
             isDiscordOutdated = Constants.DISCORD_VERSION < res.versionCode
