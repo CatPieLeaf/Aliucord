@@ -43,6 +43,15 @@ internal class Decorations : CorePlugin(Manifest().apply {
             displayNameStyles = api.displayNameStyles
             primaryGuild = api.primaryGuild
         }
+        patcher.after<CoreUser>("equals", Object::class.java) { (param, other: Any?) ->
+            if (other is CoreUser) {
+                param.result = (param.result as Boolean)
+                    && avatarDecorationData == other.avatarDecorationData
+                    && collectibles == other.collectibles
+                    && displayNameStyles == other.displayNameStyles
+                    && primaryGuild == other.primaryGuild
+            }
+        }
         patcher.after<CoreUser.Companion>("merge", CoreUser::class.java, User::class.java) { (param, old: CoreUser, api: User) ->
             val res = param.result as CoreUser
 
@@ -57,6 +66,15 @@ internal class Decorations : CorePlugin(Manifest().apply {
             collectibles = api.collectibles
             displayNameStyles = api.displayNameStyles
             primaryGuild = api.primaryGuild
+        }
+        patcher.after<MeUser>("equals", Object::class.java) { (param, other: Any?) ->
+            if (other is MeUser) {
+                param.result = (param.result as Boolean)
+                    && avatarDecorationData == other.avatarDecorationData
+                    && collectibles == other.collectibles
+                    && displayNameStyles == other.displayNameStyles
+                    && primaryGuild == other.primaryGuild
+            }
         }
         patcher.after<MeUser.Companion>("merge", MeUser::class.java, User::class.java) { (param, old: MeUser, api: User) ->
             val res = param.result as MeUser
