@@ -52,7 +52,7 @@ object RNSuperProperties {
 
     // update to latest Beta branch sometimes
     const val buildNumber = 4169
-    const val versionCode = 283110
-    const val versionString = "283.10 - rn"
+    const val versionCode = 302105
+    const val versionString = "302.5 - rn"
     const val userAgent = "Discord-Android/$versionCode;RNA"
 }
