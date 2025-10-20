@@ -12,19 +12,22 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
-import com.aliucord.Utils
+import com.aliucord.*
 import com.aliucord.api.PatcherAPI
 import com.aliucord.coreplugins.decorations.DecorationsSettings
 import com.aliucord.patcher.*
 import com.aliucord.utils.DimenUtils.dp
+import com.aliucord.utils.GsonUtils
 import com.aliucord.utils.ViewUtils.addTo
 import com.aliucord.utils.ViewUtils.findViewById
 import com.aliucord.utils.accessField
 import com.aliucord.wrappers.users.primaryGuild
 import com.discord.api.user.PrimaryGuild
 import com.discord.databinding.WidgetChannelMembersListItemUserBinding
+import com.discord.stores.StoreLurking
 import com.discord.stores.StoreStream
 import com.discord.utilities.color.ColorCompat
+import com.discord.utilities.error.Error
 import com.discord.utilities.icon.IconUtils
 import com.discord.views.UsernameView
 import com.discord.widgets.channels.memberlist.adapter.ChannelMembersListAdapter
@@ -33,6 +36,7 @@ import com.discord.widgets.chat.list.adapter.WidgetChatListAdapter
 import com.discord.widgets.chat.list.adapter.WidgetChatListAdapterItemMessage
 import com.discord.widgets.chat.list.entries.ChatListEntry
 import com.discord.widgets.chat.list.entries.MessageEntry
+import com.discord.widgets.guilds.join.GuildJoinHelperKt
 import com.discord.widgets.roles.RoleIconView
 import com.discord.widgets.user.profile.UserProfileHeaderView
 import com.discord.widgets.user.profile.UserProfileHeaderViewModel
@@ -40,8 +44,14 @@ import com.facebook.drawee.span.SimpleDraweeSpanTextView
 import com.facebook.drawee.view.SimpleDraweeView
 import com.lytefast.flexinput.R
 
+private val logger = Logger("Decorations/GuildTags")
 private val guildTagViewId = View.generateViewId()
 private val ChannelMembersListViewHolderMember.binding by accessField<WidgetChannelMembersListItemUserBinding>()
+
+private data class SetGuildIdentityPayload(
+    val identityEnabled: Boolean,
+    val identityGuildId: Long,
+)
 
 private class GuildTagView(ctx: Context) : CardView(ctx) {
     private lateinit var badge: SimpleDraweeView
@@ -137,6 +147,49 @@ internal object GuildTags {
         patchMemberList(patcher)
         patchProfileHeader(patcher)
         patchMessageAuthor(patcher)
+    }
+
+    fun adoptTag(guildId: Long, callback: (() -> Unit)? = null) {
+        Utils.threadPool.submit {
+            try {
+                val req = Http.Request.newDiscordRNRequest("/users/@me/clan", "PUT")
+                req.executeWithJson(GsonUtils.gsonRestApi, SetGuildIdentityPayload(true, guildId))
+                callback?.invoke()
+            } catch(e: Throwable) {
+                logger.errorToast("Failed to adopt guild tag", e)
+            }
+        }
+    }
+
+    fun joinGuild(context: Context, guildId: Long, callback: (() -> Unit)? = null) {
+        Utils.threadPool.submit {
+            try {
+                val sessionId: String? = StoreLurking.`access$getSessionId$p`(StoreStream.getLurking())
+                if (sessionId == null) {
+                    throw Throwable("Guild $guildId join failed due to missing session id")
+                }
+                GuildJoinHelperKt.`joinGuild$default`(
+                    context,
+                    guildId,
+                    /* isLurker */ false,
+                    sessionId,
+                    /* directoryChannelId */ null,
+                    /* contextProperties */ null,
+                    /* errorClass */ GuildTags::class.java, // (only class name is used, for error reporting)
+                    /* onSubscribe */ null,
+                    /* onError */ { e: Any? ->
+                        logger.errorToast("Failed to join guild")
+                        logger.error((e as Error).toString(), null)
+                    },
+                    /* captchaPayload */ null,
+                    /* onNext */ { _ -> callback?.invoke() },
+                    0b01110110000,
+                    null
+                )
+            } catch(e: Throwable) {
+                logger.errorToast("Failed to join guild", e)
+            }
+        }
     }
 
     // Used in member list and profile header

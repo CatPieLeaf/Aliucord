@@ -3,7 +3,8 @@ package com.aliucord.coreplugins.decorations.guildtags
 import androidx.collection.LruCache
 import com.aliucord.*
 import com.aliucord.Http.HttpException
-import com.aliucord.utils.*
+import com.aliucord.utils.GsonUtils
+import com.aliucord.utils.SerializedName
 import com.discord.api.commands.Application
 
 private val logger = Logger("GuildProfileStore")

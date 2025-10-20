@@ -20,6 +20,7 @@ import com.aliucord.utils.DimenUtils.dp
 import com.aliucord.utils.ViewUtils.addTo
 import com.aliucord.views.Button
 import com.aliucord.widgets.BottomSheet
+import com.aliucord.wrappers.users.primaryGuild
 import com.discord.api.commands.Application
 import com.discord.api.message.reaction.MessageReactionEmoji
 import com.discord.stores.StoreStream
@@ -68,8 +69,7 @@ class GuildProfileSheet : BottomSheet() {
     private lateinit var description: TextView
     private lateinit var games: LinearLayout
     private lateinit var traits: ChipGroup
-    private lateinit var requestButton: Button
-    private lateinit var joinButton: Button
+    private lateinit var actionButton: Button
 
     private val bannerId = View.generateViewId()
     private val iconContainerId = View.generateViewId()
@@ -181,18 +181,10 @@ class GuildProfileSheet : BottomSheet() {
                     chipSpacingVertical = 8.dp
                     chipSpacingHorizontal = 8.dp
                 }
-                requestButton = Button(ctx).addTo(this) {
+                actionButton = Button(ctx).addTo(this) {
                     layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
                         topMargin = 12.dp
                     }
-                    setText(R.h.guild_role_subscription_settings_enable_cta)
-                    visibility = GONE
-                }
-                joinButton = Button(ctx).addTo(this) {
-                    layoutParams = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
-                        topMargin = 12.dp
-                    }
-                    setText(R.h.join_guild)
                     visibility = GONE
                 }
             }
@@ -237,16 +229,7 @@ class GuildProfileSheet : BottomSheet() {
         configureCounts(profile)
         configureGames(profile, applications)
         configureTraits(profile)
-
-        joinButton.visibility = GONE
-        requestButton.visibility = GONE
-        if (StoreStream.getGuilds().getGuild(profile.id) == null) {
-            if (profile.features.contains("DISCOVERABLE")) {
-                joinButton.visibility = VISIBLE
-            } else if (profile.features.contains("MEMBER_VERIFICATION_MANUAL_APPROVAL")) {
-                requestButton.visibility = VISIBLE
-            }
-        }
+        configureActionButton(profile)
     }
 
     private fun configureBanner(profile: GuildProfile) {
@@ -415,6 +398,56 @@ class GuildProfileSheet : BottomSheet() {
                 }
             }
             visibility = if (profile.traits.isEmpty()) GONE else VISIBLE
+        }
+    }
+
+    private fun configureActionButton(profile: GuildProfile) {
+        actionButton.visibility = VISIBLE
+        val guild = StoreStream.getGuilds().getGuild(profile.id)
+        // User is already in guild
+        if (guild != null) {
+            // User has the guild tag active
+            if (StoreStream.getUsers().me.primaryGuild?.identityGuildId == profile.id) {
+                actionButton.setText(R.h.hub_directory_card_joined_guild_button)
+                actionButton.setOnClickListener {
+                    StoreStream.getGuildSelected().set(profile.id)
+                    dismiss()
+                }
+            // User doesn't have the guild tag active
+            } else {
+                actionButton.text = "Adopt Tag"
+                actionButton.setOnClickListener {
+                    actionButton.isEnabled = false
+                    GuildTags.adoptTag(profile.id) {
+                        Utils.mainThread.post { dismiss() }
+                    }
+                }
+            }
+        // Guild is publicly joinable
+        } else if ("DISCOVERABLE" in profile.features) {
+            actionButton.setText(R.h.join_guild)
+            actionButton.setOnClickListener {
+                actionButton.isEnabled = false
+                // Lurking is an unfinished feature :( this will NPE upon joining + there is no code
+                // to handle post-joining
+                // StoreStream.getLurking().startLurkingAndNavigate(profile.id, null, null)
+
+                GuildTags.joinGuild(requireContext(), profile.id) {
+                    StoreStream.getGuildSelected().set(profile.id)
+                    Utils.mainThread.post { dismiss() }
+                }
+                dismiss()
+            }
+        // Guild requires application to join
+        } else if ("MEMBER_VERIFICATION_MANUAL_APPROVAL" in profile.features) {
+            actionButton.setText(R.h.guild_role_subscription_settings_enable_cta)
+            actionButton.alpha = 0.5f
+            actionButton.setOnClickListener {
+                Utils.showToast("Server applications are not yet supported in Aliucord. Please join this server using Desktop or official Discord for now.")
+            }
+        // Guild is not publicly joinable
+        } else {
+            actionButton.visibility = GONE
         }
     }
 }
