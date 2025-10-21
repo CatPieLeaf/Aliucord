@@ -17,20 +17,21 @@ import com.aliucord.*
 import com.aliucord.api.PatcherAPI
 import com.aliucord.coreplugins.decorations.DecorationsSettings
 import com.aliucord.patcher.*
+import com.aliucord.utils.*
 import com.aliucord.utils.DimenUtils.dp
-import com.aliucord.utils.GsonUtils
 import com.aliucord.utils.ViewUtils.addTo
 import com.aliucord.utils.ViewUtils.findViewById
-import com.aliucord.utils.accessField
 import com.aliucord.wrappers.users.primaryGuild
 import com.discord.api.user.PrimaryGuild
 import com.discord.databinding.WidgetChannelMembersListItemUserBinding
-import com.discord.stores.StoreLurking
-import com.discord.stores.StoreStream
+import com.discord.stores.*
 import com.discord.utilities.color.ColorCompat
 import com.discord.utilities.error.Error
 import com.discord.utilities.icon.IconUtils
 import com.discord.views.UsernameView
+import com.discord.widgets.channels.list.WidgetChannelsListAdapter
+import com.discord.widgets.channels.list.items.ChannelListItem
+import com.discord.widgets.channels.list.items.ChannelListItemPrivate
 import com.discord.widgets.channels.memberlist.adapter.ChannelMembersListAdapter
 import com.discord.widgets.channels.memberlist.adapter.ChannelMembersListViewHolderMember
 import com.discord.widgets.chat.list.adapter.WidgetChatListAdapter
@@ -153,6 +154,7 @@ internal object GuildTags {
         patchMemberList(patcher)
         patchProfileHeader(patcher)
         patchMessageAuthor(patcher)
+        patchDMsList(patcher)
     }
 
     fun adoptTag(guildId: Long, callback: (() -> Unit)? = null) {
@@ -276,6 +278,36 @@ internal object GuildTags {
             val referencedAuthor = entry.message.referencedMessage?.e()
             itemView.findViewById<GuildTagView>(replyTagId)
                 ?.configure(referencedAuthor?.primaryGuild)
+        }
+    }
+
+    private fun patchDMsList(patcher: PatcherAPI) {
+        // Patches the username in the Direct Messages list
+        patcher.after<WidgetChannelsListAdapter.ItemChannelPrivate>(
+            Int::class.javaPrimitiveType!!,
+            WidgetChannelsListAdapter::class.java,
+        ) { _ ->
+            val nameView = itemView.findViewById<TextView>("channels_list_item_private_name")
+            val parent = nameView.parent as LinearLayout
+            parent.gravity = Gravity.CENTER_VERTICAL
+            GuildTagView(itemView.context).addTo(parent, 1) {
+                setCardBackgroundColor(ColorCompat.getThemedColor(context, R.b.colorBackgroundPrimary))
+                layoutParams = LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                    marginStart = 6.dp
+                }
+            }
+        }
+
+        patcher.after<WidgetChannelsListAdapter.ItemChannelPrivate>(
+            "onConfigure",
+            Int::class.javaPrimitiveType!!,
+            ChannelListItem::class.java,
+        ) { (_, _: Int, item: ChannelListItemPrivate) ->
+            ChannelUtils.getDMRecipient(item.channel)?.let { user ->
+                GuildTagView.findIn(itemView)?.run {
+                    configure(user.primaryGuild)
+                }
+            }
         }
     }
 }
