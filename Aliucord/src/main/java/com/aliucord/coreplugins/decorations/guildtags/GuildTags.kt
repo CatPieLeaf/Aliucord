@@ -12,6 +12,7 @@ import android.widget.TextView
 import androidx.cardview.widget.CardView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.constraintlayout.widget.ConstraintLayout.LayoutParams.PARENT_ID
+import androidx.fragment.app.FragmentActivity
 import com.aliucord.*
 import com.aliucord.api.PatcherAPI
 import com.aliucord.coreplugins.decorations.DecorationsSettings
@@ -134,7 +135,12 @@ private class GuildTagView(ctx: Context) : CardView(ctx) {
             /* url */ "https://cdn.discordapp.com/guild-tag-badges/${guildId}/${badgeHash}.png",
         )
         setOnClickListener {
-            GuildProfileSheet.show(Utils.widgetChatList!!.parentFragmentManager, guildId)
+            val fragmentManager = (context as? FragmentActivity)?.supportFragmentManager
+            if (fragmentManager == null) {
+                logger.warn("Could not find fragment manager to show guild profile sheet")
+                return@setOnClickListener
+            }
+            GuildProfileSheet.show(fragmentManager, guildId)
         }
     }
 }
