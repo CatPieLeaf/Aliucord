@@ -17,6 +17,8 @@ internal object DecorationsSettings {
     val enableAvatarDecoration by enableAvatarDecorationDelegate
     private val enableDisplayNamesDelegate = settings.delegate("enableDisplayNames", true)
     val enableDisplayNames by enableDisplayNamesDelegate
+    private val enableNameplatesDelegate = settings.delegate("enableNameplates", true)
+    val enableNameplates by enableNameplatesDelegate
 
     class Sheet : BottomSheet() {
         override fun onViewCreated(view: View, bundle: Bundle?) {
@@ -24,6 +26,7 @@ internal object DecorationsSettings {
 
             createSetting("Show avatar decorations", enableAvatarDecorationDelegate).addTo(linearLayout)
             createSetting("Show display names", enableDisplayNamesDelegate).addTo(linearLayout)
+            createSetting("Show nameplates", enableNameplatesDelegate).addTo(linearLayout)
         }
 
         private fun createSetting(description: String, delegate: SettingsDelegate<Boolean>): CheckedSetting {
